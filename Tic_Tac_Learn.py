@@ -3,6 +3,9 @@ import pygame
 from random import randint
 from pygame.locals import *
 
+import policy_network
+import value_network
+
 pygame.init()
 
 RED = (255, 0, 0)
@@ -220,6 +223,9 @@ def checkExists(games, moves):
 
 
 createBoard()
+policy_net = policy_network([18, 10, 9])
+value_net = value_network([18, 10, 1])
+e = engine.Engine(policy_net, value_n)
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
