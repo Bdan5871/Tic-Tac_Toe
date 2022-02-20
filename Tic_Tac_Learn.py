@@ -40,7 +40,6 @@ xWinDisplay = font_obj.render('X Wins! Press any key to play again.', True, blac
 
 
 def createBoard():
-    font_obj = pygame.font.Font('freesansbold.ttf', 25)
     text_obj = font_obj.render('Circles Wins: ' + str(circlesWins) + ' Xs Wins: ' + str(xsWins) + ' Draws: ' + str(draws) + ' Games: '  + str(gameCounter), True, black)
     screen.blit(text_obj, (10, 10))
     pygame.draw.line(screen, black, (450, 250), (450, 700), 4)
@@ -77,23 +76,23 @@ def checkcursor(x, y):
 
 def getPos(pos):
     if pos == 1:
-        return (325, 275)
+        return 325, 275
     if pos == 4:
-        return (325, 425)
+        return 325, 425
     if pos == 7:
-        return (325, 575)
+        return 325, 575
     if pos == 2:
-        return (475, 275)
+        return 475, 275
     if pos == 5:
-        return (475, 425)
+        return 475, 425
     if pos == 8:
-        return (475, 575)
+        return 475, 575
     if pos == 3:
-        return (625, 275)
+        return 625, 275
     if pos == 6:
-        return (625, 425)
+        return 625, 425
     if pos == 9:
-        return (625, 575)
+        return 625, 575
 
 
 def createpiece(pos, piece):
@@ -106,22 +105,21 @@ def createpiece(pos, piece):
         for a in xs:
             if a == pos:
                 pieceexist = True
-        if piece % 2 == 0 and pieceexist is False:
-            pygame.draw.circle(screen, black, (x + 50, y + 50), 50)
-            circles.append(pos)
-            moves[pos-1] = "O"
-            piece += 1
-            pieceexist = False
+        if pieceexist:
             return piece
-        if piece % 2 != 0 and pieceexist is False:
+        if piece % 2 == 0:
             pygame.draw.line(screen, black, (x, y), (x + 100, y + 100), 4)
             pygame.draw.line(screen, black, (x + 100, y), (x, y + 100), 4)
             xs.append(pos)
-            moves[pos-1] = "X"
+            moves[pos - 1] = "X"
             piece += 1
-            pieceexist = False
             return piece
-    return piece
+        else:
+            pygame.draw.circle(screen, black, (x + 50, y + 50), 50)
+            circles.append(pos)
+            moves[pos - 1] = "O"
+            piece += 1
+            return piece
 
 
 def testwin(pieceList):
@@ -148,30 +146,8 @@ def testwin(pieceList):
 
     if 3 in pieceList and 5 in pieceList and 7 in pieceList:
         return True
+
     return False
-
-def check(moves, i):
-    pos = 0
-    move = 0
-    if len(moves) > len(i):
-        for j in range(len(i)):
-            if i[j] != moves[j]:
-                return pos
-            move = i[j + 1]
-    if len(moves) < len(i):
-        for j in range(len(moves)):
-            if i[j] != moves[j]:
-                return pos
-            move = i[j + 1]
-        return move
-
-
-def checkExists(games, moves):
-    for i in games:
-        if i == moves:
-            return False
-    return True
-
 
 createBoard()
 policy_net = policy_network.PolicyNetwork([18, 10, 9])
@@ -188,29 +164,20 @@ while True:
             pos = checkcursor(x, y)
             piece = createpiece(pos, piece)
     if len(circles) >= 3:
-        win = testwin(circles)
-        if win is True:
+        if testwin(circles):
             screen.blit(circleWinDisplay, (500, 500))
             circlesWins += 1
             gameCounter += 1
             screen.fill(white)
-            if checkExists:
-                games.append(moves[:])
-            win = False
             moves = [".",".",".",".",".",".",".",".","."]
             circles.clear()
             xs.clear()
             createBoard()
     if len(xs) >= 3:
-        win = testwin(xs)
-        if win is True:
+        if testwin(xs):
             screen.blit(xWinDisplay, (500, 500))
             xsWins += 1
             gameCounter += 1
-            screen.fill(white)
-            if checkExists:
-                games.append(moves[:])
-            win = False
             circles.clear()
             xs.clear()
             moves = [".",".",".",".",".",".",".",".","."]
@@ -219,14 +186,11 @@ while True:
         draws += 1
         gameCounter += 1
         screen.fill(white)
-        win = False
-        if checkExists:
-            games.append(moves[:])
         circles.clear()
         xs.clear()
         moves = [".",".",".",".",".",".",".",".","."]
         createBoard()
-    if piece % 2 == 1:
-        piece = createpiece(e.get_optimal_move(np.asarray(np.reshape(moves, (3, 3))), 1000)[0] + 1, piece)
+    if piece is not None and piece % 2 == 1:
+        piece = createpiece(e.get_optimal_move(1000, np.asarray(np.reshape(moves, (3, 3))))[0] + 1, piece)
 
     pygame.display.update()

@@ -46,22 +46,13 @@ class PolicyNetwork(object):
             a_l = sigmoid(self.w[l] @ a_l + self.b[l])
         return softmax(self.w[-1] @ a_l + self.b[-1])
 
-    def get_average_cost(self, test_set):
-        total_cost = 0
-        for s, pi in test_set:
-            total_cost += cross_entropy_losses(self.feedforward(s), pi)
-        return total_cost / len(test_set)
-
-    def stochastic_gradient_descent(self, training_set, epochs, mini_batch_size, eta, c, test_set):
+    def stochastic_gradient_descent(self, training_set, epochs, mini_batch_size, eta, c):
         N = len(training_set)
         for i in range(epochs):
             np.random.shuffle(training_set)
             mini_batches = [training_set[j: j + mini_batch_size] for j in range(0, N, mini_batch_size)]
             for mini_batch in mini_batches:
                 self.update(mini_batch, eta, c)
-            print("Epoch " + str(i + 1) + " complete.")
-            if test_set:
-                print("Average cost on test set: " + str(self.get_average_cost(test_set)))
 
     def save(self, file):
         with open(file, 'w') as f:
@@ -80,10 +71,6 @@ class PolicyNetwork(object):
 
         self.w = [(1 - eta * 2 * c / len(mini_batch)) * w_l - eta * total_delta_w_l / len(mini_batch) for w_l, total_delta_w_l in zip(self.w, total_delta_w)]
         self.b = [b_l - eta * total_delta_b_l / len(mini_batch) for b_l, total_delta_b_l in zip(self.b, total_delta_b)]
-
-
-def cross_entropy_losses(p, pi):
-    return np.sum(-pi * np.log(p))
 
 
 def load(file):

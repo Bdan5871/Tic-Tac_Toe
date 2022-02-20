@@ -41,23 +41,13 @@ class ValueNetwork(object):
             a_l = tanh(w_l @ a_l + b_l)
         return a_l
 
-    def get_average_cost(self, test_set):
-        total_cost = 0
-        for s, zed in test_set:
-            total_cost += mean_squared_error(self.feedforward(s), zed)
-        return total_cost / len(test_set)
-
-    def stochastic_gradient_descent(self, training_set, epochs, mini_batch_size, eta, c, test_set):
+    def stochastic_gradient_descent(self, training_set, epochs, mini_batch_size, eta, c):
         N = len(training_set)
         for i in range(epochs):
             np.random.shuffle(training_set)
             mini_batches = [training_set[j: j + mini_batch_size] for j in range(0, N, mini_batch_size)]
             for mini_batch in mini_batches:
                 self.update(mini_batch, eta, c)
-            print("Epoch " + str(i + 1) + " complete.")
-            if test_set:
-                print("Accuracy on test set: " + str(self.accuracy(test_set)))
-                print("Average cost on test set: " + str(self.get_average_cost(test_set)))
 
     def save(self, network_file):
         with open(network_file, 'w') as f:
@@ -94,18 +84,9 @@ def load(file):
     return network
 
 
-def mean_squared_error(v, zed):
-    return np.linalg.norm(zed - v) ** 2
-
-
-def sigmoid(z):
-    return 1 / (1 + np.exp(-z))
-
-
 def tanh(z):
-    return 2 * sigmoid(2 * z) - 1
+    return np.tanh(z)
 
 
 def tanh_prime(z):
-    return 1 - tanh(z) ** 2
-
+    return 1 - np.tanh(z) ** 2

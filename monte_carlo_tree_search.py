@@ -51,14 +51,14 @@ class MonteCarloTreeNode(object):
             return 'X'
 
     def get_zed(self):
-        if self.is_loss():
-            return -1
+        if self.is_win():
+            return 1
         if self.is_draw():
             return 0
         return None
 
     def is_draw(self):
-        # assumes node is not loss
+        # assumes node is not win
         for i in range(3):
             for j in range(3):
                 if self.s[i][j] == '.':
@@ -69,47 +69,47 @@ class MonteCarloTreeNode(object):
         # assumes node is not terminal node
         return len(self.children) == 0
 
-    def is_loss(self):
-        # check for row loss
+    def is_win(self):
+        # check for row win
         for i in range(3):
             if self.s[i][0] != '.':
-                loss = True
+                win = True
                 for j in range(1, 3):
                     if self.s[i][j] != self.s[i][0]:
-                        loss = False
+                        win = False
                         break
-                if loss:
+                if win:
                     return True
 
-        # check for column loss
+        # check for column win
         for j in range(3):
             if self.s[0][j] != '.':
-                loss = True
+                win = True
                 for i in range(1, 3):
                     if self.s[i][j] != self.s[0][j]:
-                        loss = False
+                        win = False
                         break
-                if loss:
+                if win:
                     return True
 
-        # check for main-diagonal loss
+        # check for main-diagonal win
         if self.s[0][0] != '.':
-            loss = True
+            win = True
             for i in range(1, 3):
                 if self.s[i][i] != self.s[0][0]:
-                    loss = False
+                    win = False
                     break
-            if loss:
+            if win:
                 return True
 
-        # check for anti-diagonal loss
+        # check for anti-diagonal win
         if self.s[0][2] != '.':
-            loss = True
+            win = True
             for i in range(1, 3):
                 if self.s[i][2 - i] != self.s[0][2]:
-                    loss = False
+                    win = False
                     break
-            if loss:
+            if win:
                 return True
 
         return False
@@ -134,8 +134,8 @@ def simulate(node, policy_net, value_net):
         return zed
 
     if node.is_leaf():
-        x = shared.s_to_x(node.s)
-        p, v = policy_net.feedforward(x), np.argmax(value_net.feedforward(x))
+        policy_x, value_x = shared.s_to_x(node.s)
+        p, v = policy_net.feedforward(policy_x), np.argmax(value_net.feedforward(value_x))
         node.expand(p, v)
         node.N += 1
         node.W += v
@@ -150,13 +150,11 @@ def simulate(node, policy_net, value_net):
     return v
 
 
-def search(s_0, policy_net, value_net, simulations):
+def search(simulations, s_0, policy_net, value_net):
     node = MonteCarloTreeNode(s_0)
     for i in range(simulations):
         simulate(node, policy_net, value_net)
     pi = []
-    if len(node.children) == 0:
-        print(s_0)
     for a in range(9):
         if node.children[a] is not None:
             pi.append(node.children[a].N)

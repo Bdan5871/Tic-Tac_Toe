@@ -1,20 +1,18 @@
 import numpy as np
 
-c_base = 19652
-c_init = 2.5
+c_base = 1
+c_init = 0
 
 
 def s_to_x(s):
-    xs = []
-    os = []
+    policy_x = np.zeros((2, 3, 3))
+    value_x = np.full((2, 3, 3), -1)
     for i in range(3):
-        xs.append([])
-        os.append([])
         for j in range(3):
-            xs[i].append(0)
-            os[i].append(0)
             if s[i][j] == 'X':
-                xs[i][j] = 1
+                policy_x[0][i][j] = 1
+                value_x[0][i][j] = 1
             elif s[i][j] == 'O':
-                os[i][j] = 1
-    return np.reshape([xs, os], (18, 1))
+                policy_x[1][i][j] = 1
+                value_x[1][i][j] = 1
+    return np.reshape(policy_x, (18, 1)), np.reshape(value_x, (18, 1))
