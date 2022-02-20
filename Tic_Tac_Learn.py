@@ -150,8 +150,8 @@ def testwin(pieceList):
     return False
 
 createBoard()
-policy_net = policy_network.PolicyNetwork([18, 10, 9])
-value_net = value_network.ValueNetwork([18, 10, 1])
+policy_net = policy_network.load('policy_net.json')
+value_net = value_network.load('value_net.json')
 e = engine.Engine(policy_net, value_net)
 
 while True:
