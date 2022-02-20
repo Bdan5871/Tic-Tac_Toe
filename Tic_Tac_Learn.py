@@ -12,13 +12,9 @@ RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 GRAY = (127, 127, 127)
 
-rlybad = []
-rlygood = []
-bad = []
-good = []
 circles = []
 xs = []
-moves = []
+moves = [".",".",".",".",".",".",".",".","."]
 games = []
 pygame.init()
 screen = pygame.display.set_mode((1000, 1000))
@@ -61,19 +57,19 @@ def checkcursor(x, y):
     if 300 <= x <= 450 and 250 <= y <= 400:
         return 1
     if 300 <= x <= 450 and 400 <= y <= 550:
-        return 2
-    if 300 <= x <= 450 and 550 <= y <= 700:
-        return 3
-    if 450 <= x <= 600 and 250 <= y <= 400:
         return 4
+    if 300 <= x <= 450 and 550 <= y <= 700:
+        return 7
+    if 450 <= x <= 600 and 250 <= y <= 400:
+        return 2
     if 450 <= x <= 600 and 400 <= y <= 550:
         return 5
     if 450 <= x <= 600 and 550 <= y <= 700:
-        return 6
-    if 600 <= x <= 750 and 250 <= y <= 400:
-        return 7
-    if 600 <= x <= 750 and 400 <= y <= 550:
         return 8
+    if 600 <= x <= 750 and 250 <= y <= 400:
+        return 3
+    if 600 <= x <= 750 and 400 <= y <= 550:
+        return 6
     if 600 <= x <= 750 and 550 <= y <= 700:
         return 9
 
@@ -81,19 +77,19 @@ def checkcursor(x, y):
 def getPos(pos):
     if pos == 1:
         return (325, 275)
-    if pos == 2:
-        return (325, 425)
-    if pos == 3:
-        return (325, 575)
     if pos == 4:
+        return (325, 425)
+    if pos == 7:
+        return (325, 575)
+    if pos == 2:
         return (475, 275)
     if pos == 5:
         return (475, 425)
-    if pos == 6:
-        return (475, 575)
-    if pos == 7:
-        return (625, 275)
     if pos == 8:
+        return (475, 575)
+    if pos == 3:
+        return (625, 275)
+    if pos == 6:
         return (625, 425)
     if pos == 9:
         return (625, 575)
@@ -112,7 +108,7 @@ def createpiece(pos, piece):
         if piece % 2 == 0 and pieceexist is False:
             pygame.draw.circle(screen, black, (x + 50, y + 50), 50)
             circles.append(pos)
-            moves.append(pos)
+            moves[pos-1] = "O"
             piece += 1
             pieceexist = False
             return piece
@@ -120,7 +116,7 @@ def createpiece(pos, piece):
             pygame.draw.line(screen, black, (x, y), (x + 100, y + 100), 4)
             pygame.draw.line(screen, black, (x + 100, y), (x, y + 100), 4)
             xs.append(pos)
-            moves.append(pos)
+            moves[pos-1] = "X"
             piece += 1
             pieceexist = False
             return piece
@@ -153,52 +149,6 @@ def testwin(pieceList):
         return True
     return False
 
-
-def AI(moves, piece):
-    pos = 0
-    index = 0
-    false = 0
-    for i in games:
-        if i[-1] is True:
-            if len(moves) == len(i) - 2:
-                pos = check(moves, i)
-                if pos != 0:
-                    rlygood.append(pos)
-                    pos = 0
-            else:
-                pos = check(moves, i)
-                if pos != 0:
-                    good.append(pos)
-        if i[-1] is False:
-            if len(moves) == len(i) - 3:
-                pos = check(moves, i)
-                if pos != 0:
-                    rlybad.append(pos)
-                    pos = 0
-            else:
-                pos = check(moves, i)
-                if pos != 0:
-                    bad.append(pos)
-                    pos = 0
-    if len(good) != 0:
-        piece = createpiece(good[randint(0, len(good)-1)], piece)
-        good.clear()
-        bad.clear()
-        return piece
-    if len(bad) != 0:
-        for i in moves:
-            for j in bad:
-                if i == pos or j == pos:
-                    pos = randint(1, 9)
-                    piece = createpiece(pos, piece)
-                    good.clear()
-                    bad.clear()
-                    return piece
-    pos = randint(1,9)
-    piece = createpiece(pos, piece)
-    return piece
-
-
 def check(moves, i):
     pos = 0
     move = 0
@@ -223,9 +173,10 @@ def checkExists(games, moves):
 
 
 createBoard()
-policy_net = policy_network([18, 10, 9])
-value_net = value_network([18, 10, 1])
-e = engine.Engine(policy_net, value_n)
+policy_net = policy_network.PolicyNetwork([18, 10, 9])
+value_net = value_network.ValueNetwork([18, 10, 1])
+e = engine.Engine(policy_net, value_net)
+
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -242,11 +193,10 @@ while True:
             circlesWins += 1
             gameCounter += 1
             screen.fill(white)
-            moves.append(False)
             if checkExists:
                 games.append(moves[:])
             win = False
-            moves.clear()
+            moves = [".",".",".",".",".",".",".",".","."]
             circles.clear()
             xs.clear()
             createBoard()
@@ -257,27 +207,25 @@ while True:
             xsWins += 1
             gameCounter += 1
             screen.fill(white)
-            moves.append(True)
             if checkExists:
                 games.append(moves[:])
             win = False
             circles.clear()
             xs.clear()
-            moves.clear()
+            moves = [".",".",".",".",".",".",".",".","."]
             createBoard()
     if len(xs) == 5 or len(circles) == 5:
         draws += 1
         gameCounter += 1
         screen.fill(white)
         win = False
-        moves.append(False)
         if checkExists:
             games.append(moves[:])
         circles.clear()
         xs.clear()
-        moves.clear()
+        moves = [".",".",".",".",".",".",".",".","."]
         createBoard()
     if piece % 2 == 1:
-        piece = AI(moves, piece)
+        piece = createpiece(e.get_optimal_move(np.asarray(np.reshape(moves, (3, 3))), 1000)[0] + 1, piece)
 
     pygame.display.update()
